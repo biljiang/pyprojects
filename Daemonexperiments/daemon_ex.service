@@ -1,0 +1,16 @@
+[Unit]
+Description=daemon_test
+After=syslog.target
+
+[Service]
+ExecStart= python daemon_ex2.py
+# Requires systemd version 211 or newer
+# RuntimeDirectory=jupyternotebook
+Restart=always
+KillSignal=SIGQUIT
+Type=notify
+StandardError=syslog
+NotifyAccess=all
+
+# [Install]
+# WantedBy=multi-user.target

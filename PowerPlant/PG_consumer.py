@@ -39,11 +39,10 @@ def pg_tcp_service(sock, addr):
     sock.send(b'Welcome!')
     data = sock.recv(1024)
     #print(data.decode())# receive client acknowledgement and print
-    if lock.acquire():
-        df['time'] = df.index/1.0
-        #df['time'] = df['time'].apply(str)
-        J = {S: list(df[S].values) for S in df}
-        lock.release()
+    with lock:
+        df1=df.copy()    
+    df1['time'] = df1.index/1.0
+    J = {S: list(df1[S].values) for S in df1}
     J_str = json.dumps(J)    
     sock.sendall(J_str.encode('utf-8'))
     #print(J_str)
@@ -63,8 +62,9 @@ def pg_consumer():
         s=pd.read_json(msg.value.decode(),typ='series')
         s.name= msg.timestamp
         #print (s)
-        df = df.append(s)
-        df = df[-100:]
+        with lock:
+            df = df.append(s)
+            df = df[-100:]
         if (received_msg_counter % 1000)==0:
             print(datetime.fromtimestamp(msg.timestamp/1000))
             print ("message#",received_msg_counter)
